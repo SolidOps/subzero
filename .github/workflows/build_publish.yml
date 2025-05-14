@@ -1,0 +1,46 @@
+name: Build & Publish
+
+on:
+  workflow_dispatch:  
+  push:
+    branches: [ "main" ]
+
+env:
+  PROJECT_PATH: src/SubZero.sln
+  PACKAGE_OUTPUT_DIRECTORY: ${{ github.workspace }}/output
+
+jobs:
+  Build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore dependencies
+        run: dotnet restore src/SubZero.sln
+      - name: Build
+        run: dotnet build --no-restore src/SubZero.sln
+      - name: Test 
+        run: dotnet test --no-build --verbosity normal src/SubZero.sln            
+      - name: Semantic Release Setup
+        id: release-setup
+        run: echo '{"branches":["main"],"plugins":["@semantic-release/commit-analyzer", "@semantic-release/release-notes-generator", "@semantic-release/github"]}' > .releaserc.json
+      - name: Semantic Release
+        id: semantic
+        uses: cycjimmy/semantic-release-action@v4.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Publish NuGet package
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          dotnet clean src/SubZero/SubZero.csproj
+          dotnet pack -p:PackageVersion=${{ steps.semantic.outputs.new_release_version }} --configuration Release src/SubZero/SubZero.csproj 
+          dotnet nuget push src/SubZero/**/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://api.nuget.org/v3/index.json
+
+
