@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <AssemblyName>SolidOps.SubZero</AssemblyName>
+    <RootNamespace>SolidOps.SubZero</RootNamespace>
+    <PackageId>SubZero</PackageId>
+    <PackageDescription>A tooling library used in Solid Ops projects</PackageDescription>
+    <RepositoryUrl>https://github.com/SolidOps/subzero</RepositoryUrl>
+    <Company>Solid Ops</Company>
+    <Authors>Damien Lechat</Authors>
+  </PropertyGroup>
+
+</Project>
