@@ -37,7 +37,7 @@ namespace SolidOps.SubZero
             catch (JsonException e)
             {
                 if (!preserveReference && safeMode && e.Message.StartsWith("A possible object cycle was detected"))
-                    return JsonSerializer.Serialize(obj, GetOptions(true));
+                    return JsonSerializer.Serialize(obj, GetOptions(true, camelCase));
                 else
                     throw;
             }
