@@ -6,7 +6,7 @@ on:
     branches: [ "main" ]
 
 env:
-  PROJECT_PATH: src/SubZero.sln
+  PROJECT_PATH: src/SubZero.slnx
   PACKAGE_OUTPUT_DIRECTORY: ${{ github.workspace }}/output
 
 jobs:
@@ -21,13 +21,13 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
       - name: Restore dependencies
-        run: dotnet restore src/SubZero.sln
+        run: dotnet restore src/SubZero.slnx
       - name: Build
-        run: dotnet build --no-restore src/SubZero.sln
+        run: dotnet build --no-restore src/SubZero.slnx
       - name: Test 
-        run: dotnet test --no-build --verbosity normal src/SubZero.sln            
+        run: dotnet test --no-build --verbosity normal src/SubZero.slnx            
       - name: Semantic Release Setup
         id: release-setup
         run: echo '{"branches":["main"],"plugins":["@semantic-release/commit-analyzer", "@semantic-release/release-notes-generator", "@semantic-release/github"]}' > .releaserc.json
