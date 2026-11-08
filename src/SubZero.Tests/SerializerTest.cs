@@ -342,11 +342,27 @@ namespace SubZero.Tests
             Assert.AreSame(res, res.Children.Single().Parent);
         }
 
-        [TestMethod]
-        public void TestPreservedPayloadNotDetectedWhenIdIsNotFirst()
+        public class Envelope
         {
-            var res = Serializer.Deserialize<Simple>("{\"StrProp\":\"$id\",\"$id\":\"1\"}");
+            public CycleNested? Data { get; set; }
+        }
 
+        [TestMethod]
+        public void TestPreservedPayloadDetectedWhenWrapped()
+        {
+            var json = "{\"Data\":" + Serializer.Serialize(BuildCycle(), true) + "}";
+
+            var res = Serializer.Deserialize<Envelope>(json);
+
+            Assert.AreSame(res.Data, res.Data!.Children.Single().Parent);
+        }
+
+        [TestMethod]
+        public void TestStringValueEqualToIdDoesNotBreakPlainPayload()
+        {
+            var res = Serializer.Deserialize<Simple>("{\"IntProp\":3,\"StrProp\":\"$id\"}");
+
+            Assert.AreEqual(3, res.IntProp);
             Assert.AreEqual("$id", res.StrProp);
         }
     }
