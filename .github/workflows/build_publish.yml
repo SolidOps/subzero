@@ -15,6 +15,9 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write
+      pull-requests: write
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,12 +38,18 @@ jobs:
         id: semantic
         uses: cycjimmy/semantic-release-action@v4.2.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: NuGet login
+        if: steps.semantic.outputs.new_release_published == 'true'
+        id: nuget-login
+        uses: NuGet/login@v1
+        with:
+          user: ${{ secrets.NUGET_USER }}
       - name: Publish NuGet package
         if: steps.semantic.outputs.new_release_published == 'true'
         run: |
           dotnet clean src/SubZero/SubZero.csproj
           dotnet pack -p:PackageVersion=${{ steps.semantic.outputs.new_release_version }} --configuration Release src/SubZero/SubZero.csproj 
-          dotnet nuget push src/SubZero/**/*.nupkg --api-key ${{ secrets.NUGET_TOKEN }} --source https://api.nuget.org/v3/index.json
+          dotnet nuget push src/SubZero/**/*.nupkg --api-key ${{ steps.nuget-login.outputs.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
 
