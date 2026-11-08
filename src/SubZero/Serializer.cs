@@ -52,14 +52,29 @@ namespace SolidOps.SubZero
         {
             if (string.IsNullOrEmpty(json)) return null;
 
-            if (safeMode && !preserveReference)
-            {
-                var idIndex = json.IndexOf("\"$id\":\"1\",");
-                if (idIndex >= 0 && idIndex < 3)
-                    preserveReference = true;
-            }
+            if (safeMode && !preserveReference && StartsWithReferenceId(json))
+                preserveReference = true;
 
             return JsonSerializer.Deserialize(json, type, GetOptions(preserveReference, camelCase));
+        }
+
+        private const int ReferenceIdProbeLength = 256;
+
+        private static bool StartsWithReferenceId(string json)
+        {
+            var isFinalBlock = json.Length <= ReferenceIdProbeLength;
+            var probe = Encoding.UTF8.GetBytes(isFinalBlock ? json : json.Substring(0, ReferenceIdProbeLength));
+            var reader = new Utf8JsonReader(probe, isFinalBlock, default);
+            try
+            {
+                return reader.Read() && reader.TokenType == JsonTokenType.StartObject
+                    && reader.Read() && reader.TokenType == JsonTokenType.PropertyName
+                    && reader.ValueTextEquals("$id");
+            }
+            catch (JsonException)
+            {
+                return false;
+            }
         }
     }
 }
